@@ -1,0 +1,121 @@
+<!--  -->
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>fcuk — Cart</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: 'Poppins', sans-serif; }</style>
+</head>
+<body style="font-family: 'Poppins', sans-serif;" class="bg-gray-50 text-gray-800 w-full min-h-screen">
+  <header class="w-full bg-white shadow-sm">
+    <div class="w-full flex items-center justify-between px-6 py-4">
+      <a href="./index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-pink-500 rounded flex items-center justify-center text-white font-bold">fc</div>
+        <span class="text-xl font-semibold tracking-wide">fcuk</span>
+      </a>
+      <nav class="flex items-center gap-4">
+        <a href="./index.html" class="text-sm hover:text-indigo-600">Home</a>
+        <a href="./about.html" class="text-sm hover:text-indigo-600">About</a>
+        <a href="./contact.html" class="text-sm hover:text-indigo-600">Contact</a>
+        <a href="./cart.html" class="text-sm hover:text-indigo-600">Cart</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="w-full py-12 px-6">
+    <div class="w-full">
+      <h1 class="text-2xl font-bold">Your Cart</h1>
+      <p class="text-gray-600 mt-2">Review items below. You can change quantities or remove items.</p>
+
+      <div id="cartArea" class="w-full mt-6 bg-white rounded-lg shadow p-4">
+        <!-- Cart items will render here -->
+      </div>
+
+      <div class="w-full mt-6 flex items-center justify-end">
+        <a href="./checkout.html" id="goCheckout" class="bg-indigo-600 text-white px-4 py-2 rounded disabled:opacity-50">Proceed to Checkout</a>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('fcuk_cart');
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) { return {}; }
+    }
+    function saveCart(cart) { localStorage.setItem('fcuk_cart', JSON.stringify(cart)); }
+
+    function renderCart() {
+      const cart = loadCart();
+      const area = document.getElementById('cartArea');
+      const keys = Object.keys(cart);
+      if (keys.length === 0) {
+        area.innerHTML = '<p class="text-gray-600">Your cart is empty. <a href="./index.html" class="text-indigo-600">Browse menu</a></p>';
+        document.getElementById('goCheckout').classList.add('opacity-50');
+        document.getElementById('goCheckout').setAttribute('aria-disabled', 'true');
+        return;
+      }
+      let total = 0;
+      area.innerHTML = '<div class="w-full space-y-4">' + keys.map(k => {
+        const it = cart[k];
+        const sub = it.price * it.qty;
+        total += sub;
+        return `
+          <div class="w-full flex items-center justify-between border-b pb-4">
+            <div class="flex items-center gap-4">
+              <img src="https://images.pexels.com/photos/33631170/pexels-photo-33631170.jpeg?auto=compress&cs=tinysrgb&h=650&w=940" alt="${it.name}" class="w-20 h-20 object-cover rounded" />
+              <div>
+                <div class="font-semibold">${it.name}</div>
+                <div class="text-sm text-gray-600">${it.desc}</div>
+                <div class="text-xs text-gray-400 mt-1">${it.category}</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-sm">₹ ${it.price}</div>
+              <div class="flex items-center gap-1 border rounded px-2 py-1">
+                <button onclick="changeQty('${k}', -1)" class="text-gray-600">-</button>
+                <div class="px-2">${it.qty}</div>
+                <button onclick="changeQty('${k}', 1)" class="text-gray-600">+</button>
+              </div>
+              <div class="text-sm font-semibold">₹ ${sub}</div>
+              <button onclick="removeItem('${k}')" class="text-red-500 text-sm">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('') + `
+        <div class="w-full flex items-center justify-end pt-4">
+          <div class="text-lg font-bold">Total: ₹ ${total}</div>
+        </div>
+      </div>`;
+      document.getElementById('goCheckout').classList.remove('opacity-50');
+      document.getElementById('goCheckout').removeAttribute('aria-disabled');
+    }
+
+    function changeQty(id, delta) {
+      const cart = loadCart();
+      if (!cart[id]) return;
+      cart[id].qty += delta;
+      if (cart[id].qty < 1) delete cart[id];
+      saveCart(cart);
+      renderCart();
+    }
+
+    function removeItem(id) {
+      const cart = loadCart();
+      if (cart[id]) delete cart[id];
+      saveCart(cart);
+      renderCart();
+    }
+
+    // initialize
+    renderCart();
+  </script>
+</body>
+</html>
