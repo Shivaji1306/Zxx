@@ -1,0 +1,185 @@
+<!--  -->
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>fcuk — Checkout</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: 'Poppins', sans-serif; }</style>
+</head>
+<body style="font-family: 'Poppins', sans-serif;" class="bg-gray-50 text-gray-800 w-full min-h-screen">
+  <header class="w-full bg-white shadow-sm">
+    <div class="w-full flex items-center justify-between px-6 py-4">
+      <a href="./index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-pink-500 rounded flex items-center justify-center text-white font-bold">fc</div>
+        <span class="text-xl font-semibold tracking-wide">fcuk</span>
+      </a>
+      <nav class="flex items-center gap-4">
+        <a href="./index.html" class="text-sm hover:text-indigo-600">Home</a>
+        <a href="./about.html" class="text-sm hover:text-indigo-600">About</a>
+        <a href="./contact.html" class="text-sm hover:text-indigo-600">Contact</a>
+        <a href="./cart.html" class="text-sm hover:text-indigo-600">Cart</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="w-full py-12 px-6">
+    <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="w-full bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold">Billing & Delivery</h2>
+        <form id="checkoutForm" class="mt-4 space-y-4">
+          <div>
+            <label class="text-sm font-medium">Name</label>
+            <input id="name" required class="w-full mt-2 px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Email</label>
+            <input id="email" type="email" required class="w-full mt-2 px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Phone</label>
+            <input id="phone" required class="w-full mt-2 px-3 py-2 border rounded" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Delivery Address</label>
+            <textarea id="address" rows="3" required class="w-full mt-2 px-3 py-2 border rounded"></textarea>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Payment Method</label>
+            <div class="mt-2 flex gap-3">
+              <label class="inline-flex items-center gap-2"><input type="radio" name="pm" value="razorpay" checked /> Razorpay (Mock)</label>
+              <label class="inline-flex items-center gap-2"><input type="radio" name="pm" value="cod" /> Cash on Delivery</label>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded">Pay / Place Order</button>
+            <a href="./cart.html" class="text-sm text-gray-600">Back to cart</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="w-full bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold">Order Summary</h2>
+        <div id="orderSummary" class="mt-4">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Load cart and show summary
+    function loadCart() {
+      try { const raw = localStorage.getItem('fcuk_cart'); return raw ? JSON.parse(raw) : {}; } catch(e) { return {}; }
+    }
+
+    function renderSummary() {
+      const cart = loadCart();
+      const keys = Object.keys(cart);
+      const root = document.getElementById('orderSummary');
+      if (keys.length === 0) { root.innerHTML = '<p class="text-gray-600">Your cart is empty. <a href="./index.html" class="text-indigo-600">Browse menu</a></p>'; return; }
+      let total = 0;
+      root.innerHTML = '<div class="space-y-3">' + keys.map(k => {
+        const it = cart[k];
+        const sub = it.price * it.qty; total += sub;
+        return `<div class="flex items-center justify-between"><div><div class=\"font-medium\">${it.name} <span class=\"text-xs text-gray-500\">x${it.qty}</span></div><div class=\"text-sm text-gray-500\">${it.desc}</div></div><div class=\"font-semibold\">₹ ${sub}</div></div>`;
+      }).join('') + `
+        <div class="border-t pt-3 flex items-center justify-between"><div class="font-semibold">Subtotal</div><div class="font-semibold">₹ ${total}</div></div>
+        <div class="text-sm text-gray-500">All prices in INR (₹). Mock Razorpay integration by default.</div>
+      </div>`;
+    }
+
+    renderSummary();
+
+    // Mock server calls for Razorpay order creation and payment handling
+    function createMockOrder(amount) {
+      // Normally you'd call your server to create an order with Razorpay and get an order_id.
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve({ id: 'order_mock_' + Date.now(), amount, currency: 'INR' });
+        }, 700);
+      });
+    }
+
+    function openMockRazorpay(options) {
+      // Simulate Razorpay checkout flow
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // Simulate a successful payment
+          resolve({ razorpay_payment_id: 'pay_mock_' + Date.now(), razorpay_order_id: options.order_id, status: 'success' });
+        }, 1200);
+      });
+    }
+
+    document.getElementById('checkoutForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cart = loadCart();
+      const keys = Object.keys(cart);
+      if (keys.length === 0) { alert('Cart is empty'); return; }
+
+      const pm = document.querySelector('input[name="pm"]:checked').value;
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address = document.getElementById('address').value.trim();
+      if (!name || !email || !phone || !address) { alert('Please fill all fields'); return; }
+
+      // compute amount in paise for Razorpay (INR * 100)
+      const amount = Object.values(cart).reduce((s, it) => s + it.price * it.qty, 0);
+
+      if (pm === 'cod') {
+        // Mock COD order
+        const mockOrder = { id: 'order_cod_' + Date.now(), amount, currency: 'INR', payment: 'COD' };
+        // Here you'd normally post order to your server
+        alert('Order placed (COD). Order ID: ' + mockOrder.id);
+        localStorage.removeItem('fcuk_cart');
+        window.location.href = './index.html';
+        return;
+      }
+
+      // Razorpay flow (mock by default). Create 'order' on server (mocked here)
+      try {
+        const order = await createMockOrder(amount * 100); // paise
+        // Prepare options (matching Razorpay fields) — in production you'd use real order.id
+        const options = {
+          key: 'rzp_test_mock', // placeholder
+          amount: order.amount, // paise
+          currency: order.currency,
+          name: 'fcuk',
+          description: 'Order Payment',
+          order_id: order.id,
+          handler: function(response) {
+            // Would be called by Razorpay script on success
+            console.log('Razorpay success', response);
+          }
+        };
+
+        // Open mock checkout
+        const paymentResult = await openMockRazorpay(options);
+        if (paymentResult && paymentResult.status === 'success') {
+          // In real integration you'd verify signature server-side
+          alert('Payment successful! Payment ID: ' + paymentResult.razorpay_payment_id);
+          // Clear cart
+          localStorage.removeItem('fcuk_cart');
+          window.location.href = './index.html';
+        } else {
+          alert('Payment failed or cancelled (mock)');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Payment error (mock)');
+      }
+    });
+
+    // Note: For real Razorpay integration, you'd load Razorpay script and call
+    // const rzp = new Razorpay(options); rzp.open();
+    // And you'd create the order on your server and verify payment signatures on the server.
+  </script>
+</body>
+</html>
