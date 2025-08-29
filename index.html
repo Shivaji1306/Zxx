@@ -1,0 +1,142 @@
+<!--  -->
+<!doctype html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:300,400,500,600,700&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>fcuk — Home</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body { font-family: 'Poppins', sans-serif; }</style>
+</head>
+<body style="font-family: 'Poppins', sans-serif;" class="bg-gray-50 text-gray-800 min-h-screen w-full">
+  <!-- Header -->
+  <header class="w-full bg-white shadow-sm">
+    <div class="w-full flex items-center justify-between px-6 py-4">
+      <a href="./index.html" class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-pink-500 rounded flex items-center justify-center text-white font-bold">fc</div>
+        <span class="text-xl font-semibold tracking-wide">fcuk</span>
+      </a>
+      <nav class="flex items-center gap-4">
+        <a href="./index.html" class="text-sm hover:text-indigo-600">Home</a>
+        <a href="./about.html" class="text-sm hover:text-indigo-600">About</a>
+        <a href="./contact.html" class="text-sm hover:text-indigo-600">Contact</a>
+        <a href="./cart.html" class="text-sm hover:text-indigo-600">Cart <span id="navCartCount" class="ml-1 inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <main class="w-full">
+    <section class="w-full bg-gradient-to-r from-indigo-50 to-pink-50 py-14 px-6">
+      <div class="w-full flex flex-col md:flex-row items-center gap-8">
+        <div class="w-full md:w-1/2">
+          <h1 class="text-4xl md:text-5xl font-bold leading-tight">fcuk — Food with attitude, taste without compromise</h1>
+          <p class="mt-4 text-lg text-gray-600">Modern flavors, fast service. Browse our menu and add to cart. Checkout is quick with mock Razorpay integration (default).</p>
+          <div class="mt-6 flex gap-3">
+            <a href="#menu" class="inline-block bg-indigo-600 text-white px-5 py-2 rounded shadow-sm hover:bg-indigo-700">Explore Menu</a>
+            <a href="./about.html" class="inline-block border border-indigo-600 text-indigo-600 px-5 py-2 rounded hover:bg-indigo-50">About Us</a>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 flex justify-center">
+          <img src="https://pixabay.com/get/g9d6773fbe91e74586320f89032448c500667c33c111263ed64d7a41d5f4f69938d41ca9e7320884af0c56f62bc06b5a43c3952bae5e82a19d6ee6f5ba57b0ee0_640.png" alt="Hero dish" class="w-full max-w-md rounded-lg shadow-lg" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu" class="w-full py-12 px-6">
+      <div class="w-full">
+        <h2 class="text-2xl font-semibold">Menu</h2>
+        <p class="text-gray-600 mt-2">Default sample menu. Click "Add" to put items in your cart.</p>
+
+        <div id="menuGrid" class="w-full mt-6 grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Menu items rendered by JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer / small promo -->
+    <section class="w-full bg-white border-t py-8 px-6">
+      <div class="w-full flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+          <p class="text-gray-600">Open daily • Modern menu • Quick delivery</p>
+        </div>
+        <div>
+          <a href="./checkout.html" class="bg-pink-500 text-white px-4 py-2 rounded hover:bg-pink-600">Go to Checkout</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Default sample menu (id, name, desc, category, price in INR)
+    const MENU = [
+      { id: 'm1', name: 'Truffle Fries', desc: 'Crispy fries tossed in truffle oil, parmesan & herbs', category: 'Starters', price: 249 },
+      { id: 'm2', name: 'Spicy Chicken Burger', desc: 'Juicy chicken patty with spicy aioli and pickles', category: 'Mains', price: 349 },
+      { id: 'm3', name: 'Paneer Tikka Wrap', desc: 'Smoky paneer with greens and mint chutney', category: 'Mains', price: 299 },
+      { id: 'm4', name: 'Caesar Salad', desc: 'Romaine, parmesan, house caesar dressing', category: 'Salads', price: 199 },
+      { id: 'm5', name: 'Chocolate Lava Cake', desc: 'Warm cake with molten chocolate centre', category: 'Desserts', price: 179 },
+      { id: 'm6', name: 'Iced Cold Brew', desc: 'Slow-brewed coffee served over ice', category: 'Beverages', price: 129 }
+    ];
+
+    // Cart stored in localStorage under 'fcuk_cart'
+    function loadCart() {
+      try {
+        const raw = localStorage.getItem('fcuk_cart');
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) { return {}; }
+    }
+    function saveCart(cart) { localStorage.setItem('fcuk_cart', JSON.stringify(cart)); updateNavCount(); }
+
+    function updateNavCount() {
+      const cart = loadCart();
+      const count = Object.values(cart).reduce((s, it) => s + it.qty, 0);
+      document.getElementById('navCartCount').innerText = count;
+    }
+
+    function addToCart(menuId) {
+      const cart = loadCart();
+      if (!cart[menuId]) {
+        const item = MENU.find(m => m.id === menuId);
+        cart[menuId] = { ...item, qty: 1 };
+      } else {
+        cart[menuId].qty += 1;
+      }
+      saveCart(cart);
+      alert('Added to cart');
+    }
+
+    function renderMenu() {
+      const grid = document.getElementById('menuGrid');
+      grid.innerHTML = '';
+      MENU.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'w-full bg-white rounded-lg shadow p-4 flex flex-col justify-between';
+        card.innerHTML = `
+          <div>
+            <div class="flex items-start justify-between">
+              <h3 class="font-semibold">${item.name}</h3>
+              <span class="text-indigo-600 font-bold">₹ ${item.price}</span>
+            </div>
+            <p class="text-sm text-gray-600 mt-2">${item.desc}</p>
+            <p class="text-xs text-gray-400 mt-3">${item.category}</p>
+          </div>
+          <div class="mt-4 flex items-center justify-between">
+            <button onclick="addToCart('${item.id}')" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Add</button>
+            <img src=\"https://images.pexels.com/photos/8658324/pexels-photo-8658324.jpeg?auto=compress&cs=tinysrgb&h=650&w=940\" alt=\"${item.name}\" class=\"w-20 h-20 object-cover rounded\" />
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    // Initialize
+    renderMenu();
+    updateNavCount();
+  </script>
+</body>
+</html>
